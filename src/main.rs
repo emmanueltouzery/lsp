@@ -8,7 +8,7 @@ fn main() {
         Ok(size) => println!("{}x{}", size.ws_row, size.ws_col),
         Err(e) => println!("Error: {}", e)
     }
-    display_png();
+    display_png().unwrap();
 }
 
 fn get_terminal_size() -> Result<libc::winsize, String> {
@@ -23,13 +23,6 @@ fn get_terminal_size() -> Result<libc::winsize, String> {
         0 => return Ok(size),
         e => return Err(format!("Error reading terminal size: {}", e))
     }
-}
-
-// https://sw.kovidgoyal.net/kitty/graphics-protocol.html
-fn display_png_file() {
-    print!("\x1b_Gf=100,t=f,a=T;{}\x1b\\",
-           base64::encode("/home/emmanuel/Pictures/voscilo-2017.png"));
-    std::io::stdout().flush().unwrap();
 }
 
 fn display_png() -> std::io::Result<()> {
@@ -59,7 +52,7 @@ fn display_png() -> std::io::Result<()> {
         print!("\x1b_G{};{}\x1b\\",
                code, String::from_utf8_lossy(&chunk.to_vec()));
     }
-    std::io::stdout().flush().unwrap();
+    std::io::stdout().flush()?;
 
     Ok(())
 }
