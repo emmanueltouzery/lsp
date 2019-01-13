@@ -7,3 +7,5 @@ edition = "2018"
 [dependencies]
 libc = "0.2.46"
 base64 = "0.10.0"
+image = "0.21.0"
+quick-error = "1.2.2"

@@ -1,7 +1,15 @@
 extern crate libc;
+extern crate image;
+#[macro_use] extern crate quick_error;
 use std::io::Write; // <--- bring flush() into scope
-use std::io::prelude::*;
-use std::fs::File;
+
+quick_error! {
+    #[derive(Debug)]
+    pub enum Error {
+        Io(err: std::io::Error) { from() }
+        Image(err: image::ImageError) { from() }
+    }
+}
 
 fn main() {
     match get_terminal_size() {
@@ -25,17 +33,18 @@ fn get_terminal_size() -> Result<libc::winsize, String> {
     }
 }
 
-fn display_png() -> std::io::Result<()> {
-    let mut f = File::open("/home/emmanuel/Pictures/voscilo-2017.png")?;
-    let mut buffer = Vec::new();
-    f.read_to_end(&mut buffer)?;
+fn display_png() -> Result<(), Error> {
+    let img = image::open("/home/emmanuel/Pictures/voscilo-2017.png")
+        .map(|img| img.thumbnail(64, 64))?;
+    let mut png_thumb_vec = Vec::new(); // must be Vec<u8>
+    img.write_to(&mut png_thumb_vec, image::ImageOutputFormat::PNG)?;
 
     // https://docs.rs/base64/0.10.0/base64/fn.encode_config_slice.html#example
     let mut base64buf = Vec::new();
     // make sure we'll have a slice big enough for base64 + padding
-    base64buf.resize(buffer.len()*4/3+4, 0);
+    base64buf.resize(png_thumb_vec.len()*4/3+4, 0);
     let bytes_written = base64::encode_config_slice(
-        &buffer, base64::STANDARD, &mut base64buf);
+        &png_thumb_vec, base64::STANDARD, &mut base64buf);
     println!("base64 is {} bytes long", bytes_written);
     // shorten our vec down to just what was written
     base64buf.resize(bytes_written, 0);
