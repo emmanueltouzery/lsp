@@ -39,6 +39,7 @@ fn display_images() -> Result<(), Error> {
 }
 
 fn display_png(fname: String) -> Result<(), Error> {
+    // https://sw.kovidgoyal.net/kitty/graphics-protocol.html
     let img = image::open(fname)
         .map(|img| img.thumbnail(128, 128))?;
     let mut png_thumb_vec = Vec::new(); // must be Vec<u8>
