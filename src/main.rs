@@ -16,7 +16,7 @@ fn main() {
         Ok(size) => println!("{}x{}", size.ws_row, size.ws_col),
         Err(e) => println!("Error: {}", e)
     }
-    display_png().unwrap();
+    display_images().unwrap();
 }
 
 fn get_terminal_size() -> Result<libc::winsize, String> {
@@ -33,9 +33,14 @@ fn get_terminal_size() -> Result<libc::winsize, String> {
     }
 }
 
-fn display_png() -> Result<(), Error> {
-    let img = image::open("/home/emmanuel/Pictures/voscilo-2017.png")
-        .map(|img| img.thumbnail(64, 64))?;
+fn display_images() -> Result<(), Error> {
+    display_png("/home/emmanuel/Pictures/voscilo-2017.png".to_string())?;
+    display_png("/home/emmanuel/Pictures/voscilo-2017.png".to_string())
+}
+
+fn display_png(fname: String) -> Result<(), Error> {
+    let img = image::open(fname)
+        .map(|img| img.thumbnail(128, 128))?;
     let mut png_thumb_vec = Vec::new(); // must be Vec<u8>
     img.write_to(&mut png_thumb_vec, image::ImageOutputFormat::PNG)?;
 
@@ -45,7 +50,6 @@ fn display_png() -> Result<(), Error> {
     base64buf.resize(png_thumb_vec.len()*4/3+4, 0);
     let bytes_written = base64::encode_config_slice(
         &png_thumb_vec, base64::STANDARD, &mut base64buf);
-    println!("base64 is {} bytes long", bytes_written);
     // shorten our vec down to just what was written
     base64buf.resize(bytes_written, 0);
 
